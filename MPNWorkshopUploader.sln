@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MPNWorkshopUploader", "MPNWorkshopUploader\MPNWorkshopUploader.csproj", "{78A8B6FA-8B91-4ED2-81C5-814E89FC2F17}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{78A8B6FA-8B91-4ED2-81C5-814E89FC2F17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78A8B6FA-8B91-4ED2-81C5-814E89FC2F17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78A8B6FA-8B91-4ED2-81C5-814E89FC2F17}.Debug|x64.ActiveCfg = Debug|x64
+		{78A8B6FA-8B91-4ED2-81C5-814E89FC2F17}.Debug|x64.Build.0 = Debug|x64
+		{78A8B6FA-8B91-4ED2-81C5-814E89FC2F17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78A8B6FA-8B91-4ED2-81C5-814E89FC2F17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78A8B6FA-8B91-4ED2-81C5-814E89FC2F17}.Release|x64.ActiveCfg = Release|x64
+		{78A8B6FA-8B91-4ED2-81C5-814E89FC2F17}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EFF6C264-89EB-48F8-A58D-E8181784298D}
+	EndGlobalSection
+EndGlobal
