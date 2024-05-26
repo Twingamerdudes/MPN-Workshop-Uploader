@@ -3,10 +3,45 @@ using Steamworks;
 using System.Threading.Tasks;
 using Ugc = Steamworks.Ugc;
 using Steamworks.Data;
-using System.Xml.Linq;
+using System.IO;
+using System.Linq;
+using System.Text;
 
 namespace MPNWorkshopUploader
 {
+	public static class ImageClassifier
+	{
+		public enum ImageFormat
+		{
+			jpeg,
+			gif,
+			png,
+			unknown
+		}
+
+		public static ImageFormat GetImageFormat(byte[] bytes)
+		{
+			// see http://www.mikekunz.com/image_file_header.html  
+			var gif = Encoding.ASCII.GetBytes("GIF");    // GIF
+			var png = new byte[] { 137, 80, 78, 71 };    // PNG
+			var jpeg = new byte[] { 255, 216, 255, 224 }; // jpeg
+			var jpeg2 = new byte[] { 255, 216, 255, 225 }; // jpeg cano
+
+			if (gif.SequenceEqual(bytes.Take(gif.Length)))
+				return ImageFormat.gif;
+
+			if (png.SequenceEqual(bytes.Take(png.Length)))
+				return ImageFormat.png;
+
+			if (jpeg.SequenceEqual(bytes.Take(jpeg.Length)))
+				return ImageFormat.jpeg;
+
+			if (jpeg2.SequenceEqual(bytes.Take(jpeg2.Length)))
+				return ImageFormat.jpeg;
+
+			return ImageFormat.unknown;
+		}
+	}
 	//Thanks Facepunch for the code
 	public class TrackUpload : IProgress<float>
 	{
@@ -24,6 +59,43 @@ namespace MPNWorkshopUploader
 
 	internal class Program
 	{
+		public static bool VerifyIconPath(string path)
+		{
+			if (File.Exists(path))
+			{
+				if(ImageClassifier.GetImageFormat(File.ReadAllBytes(path)) != ImageClassifier.ImageFormat.unknown)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public static string GetImagePath(bool updating=false)
+		{
+			string path = string.Empty;
+			while(true)
+			{
+				path = Console.ReadLine();
+
+				if (path == "" && updating)
+				{
+					break;
+				}
+
+				if (!VerifyIconPath(path))
+				{
+					Console.WriteLine("IMAGE PATH NOT VALID!!!");
+					Console.Write("Icon path (absolute, don't use quotes in your path): ");
+				}
+				else
+				{
+					break;
+				}
+			}
+			return path;
+		}
+
 		static async Task Main(string[] args)
 		{
 			try
@@ -53,11 +125,11 @@ namespace MPNWorkshopUploader
 					string name = Console.ReadLine();
 					Console.Write("Mod description: ");
 					string description = Console.ReadLine();
-					Console.Write("Icon path (absolute): ");
-					string iconPath = Console.ReadLine();
-					Console.Write("Content Path (absolute): ");
+					Console.Write("Icon path (absolute, don't use quotes in your path): ");
+					string iconPath = GetImagePath();
+					Console.Write("Content path (absolute, don't use quotes in your path): ");
 					string path = Console.ReadLine();
-					Console.Write("Tags (common seperated): ");
+					Console.Write("Tags (comma separated): ");
 					string tags = Console.ReadLine();
 
 					Console.WriteLine("Are you sure you want to upload this? (y/n)");
@@ -85,50 +157,42 @@ namespace MPNWorkshopUploader
 					Console.Clear();
 					Console.ForegroundColor = ConsoleColor.Red;
 
-					//Cool little Madness Combat themed text
-					Console.WriteLine("Upload Process running.");
-					await Task.Delay(100);
-					Console.WriteLine("Improbability Drive found");
-					await Task.Delay(50);
-					Console.WriteLine("Starting upload");
-					Console.WriteLine("Current server: Other_World_001");
-
 					await upload(item);
 				}
 				else
 				{
 					//Getting mod info
-					Console.Write("Workshop item ID: ");
+					Console.Write("Workshop Item ID: ");
 					ulong IDInt = 0;
 					PublishedFileId ID = new PublishedFileId();
-					bool parsing = true;
 
 
 					//Get the ID until a valid one is provided
-					while (parsing)
+					while (true)
 					{
 						string id = Console.ReadLine();
 						if (ulong.TryParse(id, out var parsedID))
 						{
 							IDInt = parsedID;
-							parsing = false;
-						}
-						else
-						{
-							Console.WriteLine("INVALID ID");
-							Console.Write("Workshop item ID: ");
-						}
-					}
+							ID.Value = IDInt;
 
-					ID.Value = IDInt;
+							var q = await Ugc.Query.Items.WithFileId(new PublishedFileId[] { ID }).WithType(UgcType.Items).GetPageAsync(1);
+							if (q.Value.Entries.First().Owner.Name != string.Empty)
+							{
+								break;
+							}
+						}
+						Console.WriteLine("INVALID ID");
+						Console.Write("Workshop Item ID: ");
+					}
 
 					Console.Write("Mod description (leave blank to not change): ");
 					string description = Console.ReadLine();
-					Console.Write("Icon path (absolute, leave blank to not change): ");
-					string iconPath = Console.ReadLine();
-					Console.Write("Content Path (absolute, leave blank to not change): ");
+					Console.Write("Icon path (absolute, don't use quotes in your path, leave blank to not change): ");
+					string iconPath = GetImagePath(true);
+					Console.Write("Content path (absolute, don't use quotes in your path, leave blank to not change content of your mod): ");
 					string path = Console.ReadLine();
-					Console.Write("Tags (common seperated, leave blank to not change): ");
+					Console.Write("Tags (comma separated, leave blank to not change): ");
 					string tags = Console.ReadLine();
 					Console.Write("Update notes: ");
 					string updateNotes = Console.ReadLine();
@@ -163,14 +227,6 @@ namespace MPNWorkshopUploader
 					Console.Clear();
 					Console.ForegroundColor = ConsoleColor.Red;
 
-					//Cool little Madness Combat themed text
-					Console.WriteLine("Upload Process running.");
-					await Task.Delay(100);
-					Console.WriteLine("Improbability Drive found");
-					await Task.Delay(50);
-					Console.WriteLine("Starting upload");
-					Console.WriteLine("Current server: Other_World_001");
-
 					await upload(item);
 				}
 
@@ -181,6 +237,8 @@ namespace MPNWorkshopUploader
 			{
 				Console.WriteLine("Well shit");
 				Console.WriteLine(e.Message);
+				Console.ReadLine();
+				Environment.Exit(0);
 			}
 
 
@@ -191,6 +249,14 @@ namespace MPNWorkshopUploader
 
 		public static async Task upload(Ugc.Editor item)
 		{
+			//Cool little Madness Combat themed text
+			Console.WriteLine("Upload Process running.");
+			await Task.Delay(100);
+			Console.WriteLine("Improbability Drive found");
+			await Task.Delay(50);
+			Console.WriteLine("Starting upload");
+			Console.WriteLine("Current server: Other_World_001");
+
 			var result = await item.SubmitAsync(new TrackUpload());
 
 			//Upload fails
