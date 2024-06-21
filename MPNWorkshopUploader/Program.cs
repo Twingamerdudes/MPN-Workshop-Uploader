@@ -6,6 +6,7 @@ using Steamworks.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 namespace MPNWorkshopUploader
 {
@@ -201,9 +202,12 @@ namespace MPNWorkshopUploader
 					//Get mod based on ID
 					var item = new Ugc.Editor(ID)
 						.WithChangeLog(updateNotes);
-					
+
+					var q2 = await Ugc.Query.Items.WithFileId(new PublishedFileId[] { ID }).WithType(UgcType.Items).GetPageAsync(1);
+					var itemData = q2.Value.Entries.First();
+
 					//Update it with the new info
-					if(description != "")
+					if (description != "")
 					{
 						item.WithDescription(description);
 					}
@@ -219,9 +223,19 @@ namespace MPNWorkshopUploader
 					}
 
 					//Tag parsing
-					foreach (string tag in tags.Split(','))
+					if(tags.Split(',').Count() > 0){
+						foreach (string tag in tags.Split(','))
+						{
+							item.WithTag(tag);
+						}
+					}
+
+					if(itemData.Tags.Length > 0)
 					{
-						item.WithTag(tag);
+						foreach (string tag in itemData.Tags)
+						{
+							item.WithTag(tag);
+						}
 					}
 
 					Console.Clear();
