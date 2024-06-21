@@ -212,29 +212,31 @@ namespace MPNWorkshopUploader
 						item.WithDescription(description);
 					}
 
-					if(iconPath != "")
+					if (iconPath != "")
 					{
 						item.WithPreviewFile(iconPath);
 					}
 
-					if(path != "")
+					if (path != "")
 					{
 						item.WithContent(path);
 					}
 
 					//Tag parsing
-					if(tags.Split(',').Count() > 0){
+					if (tags.Split(',').Length > 0) {
 						foreach (string tag in tags.Split(','))
 						{
 							item.WithTag(tag);
 						}
 					}
-
-					if(itemData.Tags.Length > 0)
+					else
 					{
-						foreach (string tag in itemData.Tags)
+						if (itemData.Tags.Length > 0)
 						{
-							item.WithTag(tag);
+							foreach (string tag in itemData.Tags)
+							{
+								item.WithTag(tag);
+							}
 						}
 					}
 
