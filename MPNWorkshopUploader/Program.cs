@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace MPNWorkshopUploader
 {
@@ -60,16 +61,30 @@ namespace MPNWorkshopUploader
 
 	internal class Program
 	{
-		public static bool VerifyIconPath(string path)
+        public static string CheckFilePathQuotes(string path)
+        {
+            string pattern = @"""(.*?)""";
+            String[] Match = Regex.Split(path, pattern);
+            if (Match.Length != 1)
+            {
+                path = Match[1];
+            }
+            return path;
+        }
+
+        public static string VerifyIconPath(string path)
 		{
-			if (File.Exists(path))
+            if (File.Exists(path))
 			{
-				if(ImageClassifier.GetImageFormat(File.ReadAllBytes(path)) != ImageClassifier.ImageFormat.unknown)
+                if (ImageClassifier.GetImageFormat(File.ReadAllBytes(path)) == ImageClassifier.ImageFormat.unknown)
 				{
-					return true;
+					return "File type is not valid!";
+				} else
+				{
+					return "";
 				}
 			}
-			return false;
+			return "File path is not valid!";
 		}
 
 		public static string GetImagePath(bool updating=false)
@@ -78,24 +93,52 @@ namespace MPNWorkshopUploader
 			while(true)
 			{
 				path = Console.ReadLine();
+                path = CheckFilePathQuotes(path);
 
-				if (path == "" && updating)
+                if (path == "" && updating)
 				{
 					break;
 				}
-
-				if (!VerifyIconPath(path))
+				string errorMessage = VerifyIconPath(path);
+				if (errorMessage.Length != 0)
 				{
-					Console.WriteLine("IMAGE PATH NOT VALID!!!");
-					Console.Write("Icon path (absolute, don't use quotes in your path): ");
+					Console.WriteLine(errorMessage);
+					Console.Write("Icon path (absolute, quotes are fine in your path): ");
 				}
 				else
 				{
-					break;
+                    Console.WriteLine("Path chosen: {0}", path);
+                    break;
 				}
 			}
 			return path;
 		}
+
+		public static string GetContentPath(bool updating = false)
+		{
+            string path = string.Empty;
+            while (true)
+            {
+                path = Console.ReadLine();
+				path = CheckFilePathQuotes(path);
+
+                if (path == "" && updating)
+                {
+                    break;
+				}
+                if (Path.GetExtension(path) == string.Empty)
+                {
+                    Console.WriteLine("Folder path is invalid!");
+                    Console.Write("Content path (absolute, quotes are fine in your path): ");
+                }
+                else
+                {
+                    Console.WriteLine("Path chosen: {0}", path);
+                    break;
+                }	
+            }
+            return path;
+        }
 
 		static async Task Main(string[] args)
 		{
@@ -126,11 +169,11 @@ namespace MPNWorkshopUploader
 					string name = Console.ReadLine();
 					Console.Write("Mod description: ");
 					string description = Console.ReadLine();
-					Console.Write("Icon path (absolute, don't use quotes in your path): ");
+					Console.Write("Icon path (absolute, quotes are fine in your path): ");
 					string iconPath = GetImagePath();
-					Console.Write("Content path (absolute, don't use quotes in your path): ");
-					string path = Console.ReadLine();
-					Console.Write("Tags (comma separated): ");
+					Console.Write("Content path (absolute, quotes are fine in your path): ");
+					string path = GetContentPath();
+                    Console.Write("Tags (comma separated): ");
 					string tags = Console.ReadLine();
 
 					Console.WriteLine("Are you sure you want to upload this? (y/n)");
@@ -189,10 +232,10 @@ namespace MPNWorkshopUploader
 
 					Console.Write("Mod description (leave blank to not change): ");
 					string description = Console.ReadLine();
-					Console.Write("Icon path (absolute, don't use quotes in your path, leave blank to not change): ");
-					string iconPath = GetImagePath(true);
-					Console.Write("Content path (absolute, don't use quotes in your path, leave blank to not change content of your mod): ");
-					string path = Console.ReadLine();
+					Console.Write("Icon path (absolute, quotes are fine in your path, leave blank to not change): ");
+                    string iconPath = GetImagePath(true);
+                    Console.Write("Content path (absolute, quotes are fine in your path, leave blank to not change content of your mod): ");
+                    string path = GetContentPath(true);
 					Console.Write("Tags (comma separated, leave blank to not change): ");
 					string tags = Console.ReadLine();
 					Console.Write("Update notes: ");
