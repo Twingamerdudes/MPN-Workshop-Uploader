@@ -12,3 +12,5 @@ Download the Visual Studio project, and open it in Visual studio 2022. If you do
 * Net framework 4.6
 * Facepunch's Steamworks (if it isn't already installed into the project for some reason)
 * Visual Studio 2022
+
+**Short notice: Make sure you compile in 64 bit. Nothing will work if you compile it in 32 bit.**
